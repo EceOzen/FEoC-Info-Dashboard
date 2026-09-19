@@ -54,8 +54,8 @@ published panels.
 |---|---|
 | `schema/panel.schema.json` | The PanelArtifact contract — the single source of truth for what a panel JSON must contain. |
 | `feoc_panels/` | Shared Python library: `PanelArtifact` dataclass, `write_panel()`, `validate()`, DRS parsing, citations. Import from here — don't re-implement. |
-| `methods/ghg/` | GHG method scripts. Owned by Chris (see `.github/CODEOWNERS`). |
-| `methods/volcanic/` | Volcanic method scripts. Owned by Dominik. |
+| `methods/ghg/` | GHG method scripts. (see `.github/CODEOWNERS`). |
+| `methods/volcanic/` | Volcanic method scripts. |
 | `scripts/validate_panel.py` | Runs in CI on every PR touching `site/panels/**`. |
 | `scripts/build_manifest.py` | Runs in CI on merge to `main`; regenerates `site/manifest.json`. |
 | `site/index.html` | The dashboard itself — a single static HTML file, no build step, no framework. |
