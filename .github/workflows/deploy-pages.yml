@@ -1,12 +1,11 @@
 name: Deploy dashboard to GitHub Pages
 
-# Runs on every push to main. Re-validates (cheap, and guards against a
-# force-push or admin-merge bypassing the PR check), rebuilds
-# site/manifest.json from whatever panels are currently 'published', and
-# deploys the site/ directory to GitHub Pages.
+# Runs on every push to main. Re-validates panels, rebuilds site/manifest.json
+# from 'published' panels only (drafts never reach the live site), and deploys
+# the site/ directory to GitHub Pages.
 #
-# Draft panels never reach the live site: build_manifest.py excludes them
-# by default (no --include-drafts flag here).
+# Put this file at: .github/workflows/deploy-pages.yml
+# Then: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions"
 
 on:
   push:
@@ -16,6 +15,7 @@ on:
       - "schema/panel.schema.json"
       - "scripts/**"
       - "feoc_panels/**"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch: {}
 
 permissions:
