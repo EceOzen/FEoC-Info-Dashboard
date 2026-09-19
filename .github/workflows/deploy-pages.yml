@@ -1,0 +1,63 @@
+name: Deploy dashboard to GitHub Pages
+
+# Runs on every push to main. Re-validates (cheap, and guards against a
+# force-push or admin-merge bypassing the PR check), rebuilds
+# site/manifest.json from whatever panels are currently 'published', and
+# deploys the site/ directory to GitHub Pages.
+#
+# Draft panels never reach the live site: build_manifest.py excludes them
+# by default (no --include-drafts flag here).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "schema/panel.schema.json"
+      - "scripts/**"
+      - "feoc_panels/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install feoc_panels
+        run: pip install -e .
+
+      - name: Re-validate panels
+        run: python scripts/validate_panel.py
+
+      - name: Build manifest (published panels only)
+        run: python scripts/build_manifest.py
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,16 @@
+# Schema validation catches structural problems, but not scientific ones —
+# a physically wrong panel can still be schema-valid. These owners are the
+# required human review for their domain.
+#
+# Replace the placeholder handles below with real GitHub usernames.
+
+/methods/ghg/          @chris-wells-github-handle
+/site/panels/ghg/       @chris-wells-github-handle
+
+/methods/volcanic/      @dominik-stiller-github-handle
+/site/panels/volcanic/  @dominik-stiller-github-handle
+
+# Contract changes affect both domains — require agreement from both,
+# plus whoever owns the pipeline architecture.
+/schema/panel.schema.json  @chris-wells-github-handle @dominik-stiller-github-handle @ece-github-handle
+/feoc_panels/               @ece-github-handle

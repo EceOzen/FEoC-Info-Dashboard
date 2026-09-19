@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FEoC Forcing Evaluation Dashboard</title>
+<style>
+  :root{
+    --ink:#12303B;
+    --ink-dark:#0B1F27;
+    --amber:#C98D3C;
+    --amber-light:#E8C793;
+    --panel:#F4F6F5;
+    --mute:#5C6F76;
+    --border:#D8DEE0;
+    --ghg:#3E8E7E;
+    --volcanic:#B5563C;
+    --bg:#FFFFFF;
+    --danger:#B5563C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Calibri,sans-serif;
+    background:var(--panel);
+    color:var(--ink-dark);
+  }
+
+  header{
+    background:var(--ink);
+    padding:28px 32px 22px;
+  }
+  header .eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--amber-light);margin:0 0 8px;
+  }
+  header h1{
+    font-family:Georgia,serif;font-size:26px;color:#fff;margin:0 0 6px;font-weight:700;
+  }
+  header p{
+    color:#B9C7CB;font-size:13px;margin:0;max-width:640px;line-height:1.5;
+  }
+
+  .status-line{
+    max-width:1200px;margin:0 auto;padding:10px 32px;font-size:12px;color:var(--mute);
+    display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+  }
+  .status-line .dot{width:7px;height:7px;border-radius:50%;background:var(--ghg);flex-shrink:0;}
+  .status-line.error .dot{background:var(--danger);}
+
+  .tabs{
+    max-width:1200px;margin:0 auto;padding:0 32px;
+    display:flex;gap:6px;border-bottom:1px solid var(--border);
+  }
+  .tab-btn{
+    font-family:inherit;font-size:13.5px;font-weight:600;padding:11px 18px;
+    border:none;background:none;color:var(--mute);cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  .tab-btn.active{color:var(--ink);border-bottom-color:var(--amber);}
+  .tab-btn .count{
+    display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;
+    background:var(--border);color:var(--mute);border-radius:9px;padding:1px 6px;
+  }
+  .tab-btn.active .count{background:var(--amber);color:#fff;}
+
+  main{max-width:1200px;margin:0 auto;padding:28px 32px 60px;}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill, minmax(420px, 1fr));gap:18px;
+  }
+
+  .panel-card{
+    background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;
+  }
+  .panel-card .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px;}
+  .panel-card h3{margin:0;font-size:14px;color:var(--ink);font-weight:700;line-height:1.35;}
+  .panel-card .subtitle{font-size:11.5px;color:var(--mute);margin:2px 0 12px;}
+  .tag{
+    font-size:9.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    padding:3px 8px;border-radius:9px;flex-shrink:0;white-space:nowrap;
+  }
+  .tag.ghg{background:rgba(62,142,126,.14);color:var(--ghg);}
+  .tag.volcanic{background:rgba(181,86,60,.14);color:var(--volcanic);}
+  .badge-nonprod{
+    display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    padding:3px 8px;border-radius:9px;background:rgba(181,86,60,.14);color:var(--volcanic);margin-bottom:10px;
+  }
+
+  .chart-wrap{position:relative;}
+  .chart-tooltip{
+    position:absolute;pointer-events:none;background:var(--ink-dark);color:#fff;font-size:11px;
+    padding:6px 9px;border-radius:6px;line-height:1.5;box-shadow:0 4px 12px rgba(0,0,0,.25);
+    opacity:0;transform:translate(-50%,-115%);transition:opacity .08s ease;white-space:nowrap;z-index:20;
+  }
+  .chart-tooltip.show{opacity:1;}
+  .chart-tooltip .tt-title{font-weight:700;color:var(--amber-light);}
+  svg.hoverable{cursor:crosshair;}
+
+  .legend-row{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mute);}
+  .legend-item .sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+
+  .meta-row{
+    margin-top:12px;padding-top:10px;border-top:1px solid var(--panel);
+    font-size:10.5px;color:var(--mute);display:flex;flex-wrap:wrap;gap:4px 10px;
+  }
+  .meta-row b{color:var(--ink-dark);font-weight:600;}
+
+  .empty-state{
+    grid-column:1 / -1;
+    border:1px dashed var(--border);border-radius:12px;padding:48px 32px;text-align:center;
+    background:#fff;
+  }
+  .empty-state h3{margin:0 0 8px;font-size:16px;color:var(--ink);font-family:Georgia,serif;}
+  .empty-state p{margin:0 auto 4px;max-width:520px;font-size:13px;color:var(--mute);line-height:1.6;}
+  .empty-state code{
+    background:var(--panel);border:1px solid var(--border);border-radius:4px;
+    padding:1px 6px;font-size:12px;font-family:"SF Mono",Consolas,monospace;
+  }
+
+  .fetch-error{
+    grid-column:1 / -1;border:1px solid var(--volcanic);border-radius:12px;padding:24px;
+    background:rgba(181,86,60,.06);
+  }
+  .fetch-error h3{margin:0 0 8px;font-size:14px;color:var(--volcanic);}
+  .fetch-error p{margin:0;font-size:12.5px;color:var(--ink-dark);line-height:1.6;}
+  .fetch-error code{
+    background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 6px;
+    font-size:11.5px;font-family:"SF Mono",Consolas,monospace;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Fresh Eyes on CMIP Forcings</p>
+  <h1>Forcing Evaluation Dashboard</h1>
+  <p>Informational Overview. Every panel here is pushed by a method script under <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px;">methods/</code> and merged via PR — see the design doc for how to add one.</p>
+</header>
+
+<div class="status-line" id="status-line">
+  <div class="dot"></div>
+  <span id="status-text">Loading manifest…</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" data-filter="all">All <span class="count" id="count-all">0</span></button>
+  <button class="tab-btn" data-filter="ghg">GHG <span class="count" id="count-ghg">0</span></button>
+  <button class="tab-btn" data-filter="volcanic">Volcanic <span class="count" id="count-volcanic">0</span></button>
+</div>
+
+<main>
+  <div class="grid" id="panel-grid">
+    <!-- populated by loadDashboard() -->
+  </div>
+</main>
+
+<script>
+/* ============================================================
+   FEoC Dashboard — Informational Overview skeleton.
+
+   This page has NO embedded data. On load it fetches:
+     manifest.json               — the index of published panels
+     <panel.path> (per entry)    — each panel's full PanelArtifact JSON
+
+   Both are produced by scripts/build_manifest.py from whatever method
+   scripts have written under site/panels/. An empty grid with the
+   "no panels yet" message below is the CORRECT state until someone
+   opens a PR with a real panel.
+
+   chart_type -> renderer mapping lives in RENDERERS at the bottom.
+   Add a new chart_type by adding both a schema enum value
+   (schema/panel.schema.json) and a renderer function here.
+   ============================================================ */
+
+const CHART_COLORS = {
+  ghg: "#3E8E7E",
+  volcanic: "#B5563C",
+  solar: "#C98D3C",
+  aerosol: "#8B5FBF",
+  neutral: "#5C7A85",
+};
+
+let ALL_PANELS = [];       // [{ manifestEntry, artifact }]
+let CURRENT_FILTER = "all";
+
+async function loadDashboard() {
+  const statusLine = document.getElementById("status-line");
+  const statusText = document.getElementById("status-text");
+
+  let manifest;
+  try {
+    const res = await fetch("manifest.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`manifest.json responded ${res.status}`);
+    manifest = await res.json();
+  } catch (err) {
+    statusLine.classList.add("error");
+    statusText.textContent = "Could not load manifest.json";
+    renderFetchError(err);
+    return;
+  }
+
+  statusText.textContent =
+    `${manifest.panel_count} published panel(s) · built ${manifest.generated_by ? "by " + manifest.generated_by : ""}`;
+
+  const loaded = await Promise.all(
+    manifest.panels.map(async (entry) => {
+      try {
+        const res = await fetch(entry.path, { cache: "no-store" });
+        if (!res.ok) throw new Error(`${entry.path} responded ${res.status}`);
+        const artifact = await res.json();
+        return { manifestEntry: entry, artifact };
+      } catch (err) {
+        console.error(`Failed to load panel ${entry.panel_id}:`, err);
+        return null;
+      }
+    })
+  );
+
+  ALL_PANELS = loaded.filter(Boolean);
+  updateCounts();
+  render();
+}
+
+function renderFetchError(err) {
+  const grid = document.getElementById("panel-grid");
+  grid.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "fetch-error";
+  div.innerHTML = `
+    <h3>Couldn't load manifest.json</h3>
+    <p>
+      ${err.message}.<br><br>
+      If you're opening this file directly (<code>file://</code>), your browser
+      blocks the fetch — that's a browser restriction, not a bug. Serve the
+      <code>site/</code> directory over HTTP instead, e.g.
+      <code>python3 -m http.server</code> from inside <code>site/</code>, then
+      open <code>http://localhost:8000</code>.
+    </p>
+  `;
+  grid.appendChild(div);
+}
+
+function updateCounts() {
+  const counts = { all: ALL_PANELS.length, ghg: 0, volcanic: 0 };
+  ALL_PANELS.forEach(p => { counts[p.artifact.forcing_type] = (counts[p.artifact.forcing_type] || 0) + 1; });
+  document.getElementById("count-all").textContent = counts.all;
+  document.getElementById("count-ghg").textContent = counts.ghg;
+  document.getElementById("count-volcanic").textContent = counts.volcanic;
+}
+
+document.getElementById("tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".tab-btn");
+  if (!btn) return;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  CURRENT_FILTER = btn.dataset.filter;
+  render();
+});
+
+function render() {
+  const grid = document.getElementById("panel-grid");
+  grid.innerHTML = "";
+
+  const visible = ALL_PANELS.filter(
+    p => CURRENT_FILTER === "all" || p.artifact.forcing_type === CURRENT_FILTER
+  );
+
+  if (visible.length === 0) {
+    grid.appendChild(renderEmptyState());
+    return;
+  }
+
+  visible.forEach(({ artifact }) => grid.appendChild(renderPanelCard(artifact)));
+}
+
+function renderEmptyState() {
+  const div = document.createElement("div");
+  div.className = "empty-state";
+  const scopeLabel = CURRENT_FILTER === "all" ? "" : ` for ${CURRENT_FILTER}`;
+  div.innerHTML = `
+    <h3>No published panels${scopeLabel} yet</h3>
+    <p>Run a method script and open a PR to add one:</p>
+    <p><code>python methods/ghg/erf_myhre_etminan.py --species co2 --data-ref &lt;path&gt; --author &lt;you&gt;</code></p>
+    <p><code>python methods/volcanic/saod_zonal_reduction.py --data-ref &lt;path&gt; --author &lt;you&gt;</code></p>
+    <p>Once merged, this page rebuilds automatically from <code>site/manifest.json</code>.</p>
+  `;
+  return div;
+}
+
+function renderPanelCard(artifact) {
+  const card = document.createElement("div");
+  card.className = "panel-card";
+
+  const head = document.createElement("div");
+  head.className = "card-head";
+  head.innerHTML = `
+    <h3>${escapeHtml(artifact.title)}</h3>
+    <span class="tag ${artifact.forcing_type}">${artifact.forcing_type}</span>
+  `;
+  card.appendChild(head);
+
+  if (artifact.subtitle) {
+    const sub = document.createElement("p");
+    sub.className = "subtitle";
+    sub.textContent = artifact.subtitle;
+    card.appendChild(sub);
+  }
+
+  if (artifact.meta && artifact.meta.production_ready === false) {
+    const badge = document.createElement("span");
+    badge.className = "badge-nonprod";
+    badge.textContent = `Not production data (${artifact.meta.mip_era || "test era"})`;
+    card.appendChild(badge);
+  }
+
+  const chartWrap = document.createElement("div");
+  chartWrap.className = "chart-wrap";
+  card.appendChild(chartWrap);
+
+  const renderer = RENDERERS[artifact.chart_type];
+  if (renderer) {
+    renderer(chartWrap, artifact);
+  } else {
+    chartWrap.innerHTML = `<p style="font-size:12px;color:var(--mute);">No renderer registered for chart_type "${escapeHtml(artifact.chart_type)}" yet.</p>`;
+  }
+
+  card.appendChild(renderMetaRow(artifact));
+
+  return card;
+}
+
+function renderMetaRow(artifact) {
+  const row = document.createElement("div");
+  row.className = "meta-row";
+  const m = artifact.meta || {};
+  const bits = [];
+  if (m.method) bits.push(`<span><b>Method:</b> ${escapeHtml(m.method)}${m.method_version ? " v" + escapeHtml(m.method_version) : ""}</span>`);
+  if (m.mip_era) bits.push(`<span><b>Era:</b> ${escapeHtml(m.mip_era)}</span>`);
+  if (m.baseline_period) bits.push(`<span><b>Baseline:</b> ${m.baseline_period[0]}–${m.baseline_period[1]}</span>`);
+  if (m.author) bits.push(`<span><b>By:</b> ${escapeHtml(m.author)}</span>`);
+  if (m.generated_at) bits.push(`<span>${new Date(m.generated_at).toISOString().slice(0, 10)}</span>`);
+  row.innerHTML = bits.join("");
+  return row;
+}
+
+function escapeHtml(s) {
+  const div = document.createElement("div");
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+
+/* ============================================================
+   Chart renderers — one per chart_type in schema/panel.schema.json.
+   Each takes (containerEl, artifact) and draws into containerEl.
+   All use plain inline SVG, no external chart library.
+   ============================================================ */
+
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function makeScale(domain, range) {
+  return (v) => range[0] + (v - domain[0]) / (domain[1] - domain[0]) * (range[1] - range[0]);
+}
+function gridLines(svg, w, h, rows = 3) {
+  for (let i = 0; i <= rows; i++) {
+    const y = h * i / rows;
+    svg.appendChild(el("line", { x1: 0, y1: y, x2: w, y2: y, stroke: "#E7EBEA", "stroke-width": 1 }));
+  }
+}
+function colorFor(artifact) {
+  return CHART_COLORS[artifact.color_role] || CHART_COLORS.neutral;
+}
+
+function renderLine(container, artifact) {
+  const { x, y } = artifact.data;
+  if (!x || !y || x.length === 0) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
+    return;
+  }
+  const W = 400, H = 180, PAD = 8;
+  const svg = el("svg", { width: "100%", height: 180, viewBox: `0 0 ${W} ${H}`, class: "hoverable" });
+  const xDomain = [Math.min(...x), Math.max(...x)];
+  const yDomain = [Math.min(...y), Math.max(...y)];
+  const ySpan = yDomain[1] - yDomain[0] || 1;
+  const xScale = makeScale(xDomain, [PAD, W - PAD]);
+  const yScale = makeScale([yDomain[0] - ySpan * 0.08, yDomain[1] + ySpan * 0.08], [H - PAD, PAD]);
+
+  gridLines(svg, W, H, 3);
+
+  const color = colorFor(artifact);
+
+  if (artifact.confidence_regime) {
+    artifact.confidence_regime.forEach((regime, i) => {
+      const rx0 = xScale(Math.max(regime.from, xDomain[0]));
+      const rx1 = xScale(Math.min(regime.to, xDomain[1]));
+      svg.appendChild(el("rect", {
+        x: rx0, y: 0, width: Math.max(0, rx1 - rx0), height: H,
+        fill: i % 2 === 0 ? "#FAFBFB" : "#F2F4F3",
+      }));
+    });
+  }
+
+  if (artifact.annotations) {
+    artifact.annotations.forEach(a => {
+      const ax = xScale(a.x);
+      if (ax < 0 || ax > W) return;
+      svg.appendChild(el("line", {
+        x1: ax, y1: 4, x2: ax, y2: H - 4, stroke: "#B7C1C3", "stroke-width": 1, "stroke-dasharray": "2,2",
+      }));
+    });
+  }
+
+  const path = x.map((xi, i) => (i === 0 ? "M" : "L") + xScale(xi) + "," + yScale(y[i])).join(" ");
+  svg.appendChild(el("path", { d: path, fill: "none", stroke: color, "stroke-width": 2 }));
+
+  const overlay = el("rect", { x: 0, y: 0, width: W, height: H, fill: "transparent" });
+  const dot = el("circle", { r: 3.5, fill: color, stroke: "#fff", "stroke-width": 1.5, style: "display:none" });
+  svg.appendChild(overlay);
+  svg.appendChild(dot);
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "chart-tooltip";
+  container.appendChild(svg);
+  container.appendChild(tooltip);
+
+  overlay.addEventListener("mousemove", (e) => {
+    const rect = svg.getBoundingClientRect();
+    const fracX = (e.clientX - rect.left) / rect.width;
+    const xVal = xDomain[0] + fracX * (xDomain[1] - xDomain[0]);
+    let closest = 0, bestDist = Infinity;
+    x.forEach((xi, i) => { const d = Math.abs(xi - xVal); if (d < bestDist) { bestDist = d; closest = i; } });
+    const cx = xScale(x[closest]), cy = yScale(y[closest]);
+    dot.setAttribute("cx", cx); dot.setAttribute("cy", cy); dot.style.display = "block";
+    tooltip.innerHTML = `<div class="tt-title">${x[closest]}</div>${artifact.y_axis.label}: ${y[closest].toFixed(4)} ${artifact.y_axis.unit || ""}`;
+    tooltip.style.left = (cx / W) * container.clientWidth + "px";
+    tooltip.style.top = (cy / H) * 180 + "px";
+    tooltip.classList.add("show");
+  });
+  overlay.addEventListener("mouseleave", () => { tooltip.classList.remove("show"); dot.style.display = "none"; });
+
+  if (artifact.annotations && artifact.annotations.length) {
+    const legend = document.createElement("div");
+    legend.className = "legend-row";
+    legend.innerHTML = artifact.annotations
+      .map(a => `<span class="legend-item"><span class="sw" style="background:#B7C1C3"></span>${escapeHtml(a.label)} (${a.x})</span>`)
+      .join("");
+    container.appendChild(legend);
+  }
+}
+
+function renderBand(container, artifact) {
+  const { x, y } = artifact.data;
+  const unc = artifact.uncertainty;
+  if (!x || !y || x.length === 0) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
+    return;
+  }
+  const W = 400, H = 180, PAD = 8;
+  const svg = el("svg", { width: "100%", height: 180, viewBox: `0 0 ${W} ${H}`, class: "hoverable" });
+  const allVals = unc ? [...y, ...unc.lo, ...unc.hi] : y;
+  const xDomain = [Math.min(...x), Math.max(...x)];
+  const yDomain = [Math.min(...allVals), Math.max(...allVals)];
+  const ySpan = yDomain[1] - yDomain[0] || 1;
+  const xScale = makeScale(xDomain, [PAD, W - PAD]);
+  const yScale = makeScale([yDomain[0] - ySpan * 0.08, yDomain[1] + ySpan * 0.08], [H - PAD, PAD]);
+
+  gridLines(svg, W, H, 3);
+  const color = colorFor(artifact);
+
+  if (unc) {
+    const top = x.map((xi, i) => (i === 0 ? "M" : "L") + xScale(xi) + "," + yScale(unc.hi[i])).join(" ");
+    const bottom = x.slice().reverse().map((xi, i) => "L" + xScale(xi) + "," + yScale(unc.lo[unc.lo.length - 1 - i])).join(" ");
+    svg.appendChild(el("path", { d: top + " " + bottom + " Z", fill: color, opacity: 0.15, stroke: "none" }));
+  }
+  const path = x.map((xi, i) => (i === 0 ? "M" : "L") + xScale(xi) + "," + yScale(y[i])).join(" ");
+  svg.appendChild(el("path", { d: path, fill: "none", stroke: color, "stroke-width": 2 }));
+
+  container.appendChild(svg);
+
+  if (unc) {
+    const sourceLabels = { reconstruction: "Reconstruction uncertainty", "inter-model_spread": "Inter-model spread", parametric: "Parametric uncertainty" };
+    const legend = document.createElement("div");
+    legend.className = "legend-row";
+    legend.innerHTML = `<span class="legend-item"><span class="sw" style="background:${color};opacity:.4"></span>${sourceLabels[unc.source] || unc.source}</span>`;
+    container.appendChild(legend);
+  }
+}
+
+function renderBarBreakdown(container, artifact) {
+  const { categories, values } = artifact.data;
+  if (!categories || !values || categories.length === 0) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data.</p>`;
+    return;
+  }
+  const W = 400, rowH = 24, H = categories.length * rowH + 20;
+  const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
+  const xMin = Math.min(0, ...values), xMax = Math.max(0, ...values);
+  const labelColW = 110;
+  const xScale = makeScale([xMin, xMax], [labelColW, W - 40]);
+  const zeroX = xScale(0);
+
+  svg.appendChild(el("line", { x1: zeroX, y1: 4, x2: zeroX, y2: H - 4, stroke: "#B7C1C3", "stroke-width": 1 }));
+
+  categories.forEach((cat, i) => {
+    const cy = 12 + i * rowH + rowH / 2;
+    const val = values[i];
+    const x0 = xScale(Math.min(0, val)), x1 = xScale(Math.max(0, val));
+    svg.appendChild(el("text", { x: labelColW - 8, y: cy + 3, "font-size": 10, fill: "#12303B", "text-anchor": "end" })).textContent = cat;
+    svg.appendChild(el("rect", { x: x0, y: cy - 6, width: Math.max(1, x1 - x0), height: 12, rx: 2, fill: colorFor(artifact) }));
+    const valText = el("text", { x: W - 6, y: cy + 3, "font-size": 9.5, fill: "#5C6F76", "text-anchor": "end" });
+    valText.textContent = (val >= 0 ? "+" : "") + val.toFixed(2);
+    svg.appendChild(valText);
+  });
+
+  container.appendChild(svg);
+}
+
+function renderZonalHeightHeatmap(container, artifact) {
+  const { lat, alt, grid } = artifact.data;
+  if (!lat || !alt || !grid) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data.</p>`;
+    return;
+  }
+  const W = 400, H = 200, PAD = 30;
+  const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
+  const cellW = (W - PAD) / lat.length;
+  const cellH = (H - PAD) / alt.length;
+
+  const flat = grid.flat();
+  const maxV = Math.max(...flat, 1e-9);
+  const color = colorFor(artifact);
+
+  alt.forEach((a, ai) => {
+    lat.forEach((la, li) => {
+      const v = grid[ai][li];
+      const opacity = Math.max(0.04, v / maxV);
+      svg.appendChild(el("rect", {
+        x: PAD + li * cellW,
+        y: (alt.length - 1 - ai) * cellH,
+        width: cellW + 0.5,
+        height: cellH + 0.5,
+        fill: color,
+        opacity: opacity.toFixed(3),
+      }));
+    });
+  });
+
+  // axis ticks (sparse)
+  [0, Math.floor(lat.length / 2), lat.length - 1].forEach(i => {
+    svg.appendChild(el("text", { x: PAD + i * cellW, y: H - 4, "font-size": 8, fill: "#5C6F76", "text-anchor": "middle" })).textContent = lat[i] + "°";
+  });
+  [0, Math.floor(alt.length / 2), alt.length - 1].forEach(i => {
+    svg.appendChild(el("text", { x: PAD - 4, y: (alt.length - 1 - i) * cellH + 8, "font-size": 8, fill: "#5C6F76", "text-anchor": "end" })).textContent = alt[i];
+  });
+
+  container.appendChild(svg);
+}
+
+function renderScatter(container, artifact) {
+  const { x, y } = artifact.data;
+  if (!x || !y || x.length === 0) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
+    return;
+  }
+  const W = 400, H = 180, PAD = 10;
+  const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
+  const xDomain = [Math.min(...x), Math.max(...x)];
+  const yDomain = [Math.min(...y), Math.max(...y)];
+  const xScale = makeScale(xDomain, [PAD, W - PAD]);
+  const yScale = makeScale(yDomain, [H - PAD, PAD]);
+  gridLines(svg, W, H, 3);
+  const color = colorFor(artifact);
+  x.forEach((xi, i) => {
+    svg.appendChild(el("circle", { cx: xScale(xi), cy: yScale(y[i]), r: 3, fill: color, opacity: 0.75 }));
+  });
+  container.appendChild(svg);
+}
+
+function renderSparkline(container, artifact) {
+  const { x, y } = artifact.data;
+  if (!x || !y || x.length === 0) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
+    return;
+  }
+  const W = 200, H = 40, PAD = 2;
+  const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
+  const xDomain = [Math.min(...x), Math.max(...x)];
+  const yDomain = [Math.min(...y), Math.max(...y)];
+  const xScale = makeScale(xDomain, [PAD, W - PAD]);
+  const yScale = makeScale(yDomain, [H - PAD, PAD]);
+  const path = x.map((xi, i) => (i === 0 ? "M" : "L") + xScale(xi) + "," + yScale(y[i])).join(" ");
+  svg.appendChild(el("path", { d: path, fill: "none", stroke: colorFor(artifact), "stroke-width": 1.5 }));
+  container.appendChild(svg);
+}
+
+const RENDERERS = {
+  line: renderLine,
+  band: renderBand,
+  bar_breakdown: renderBarBreakdown,
+  zonal_height_heatmap: renderZonalHeightHeatmap,
+  scatter: renderScatter,
+  sparkline: renderSparkline,
+};
+
+loadDashboard();
+</script>
+
+</body>
+</html>

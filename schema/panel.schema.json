@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feoc-dashboard/schema/panel.schema.json",
+  "title": "PanelArtifact",
+  "description": "The contract every FEoC method script writes to. One JSON file = one dashboard panel. Written by feoc_panels.write_panel(), checked by scripts/validate_panel.py at PR time, and consumed by the dashboard's generic chart_type-keyed renderer.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "panel_id",
+    "title",
+    "forcing_type",
+    "chart_type",
+    "analysis_level",
+    "x_axis",
+    "y_axis",
+    "data",
+    "meta",
+    "status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of THIS schema the panel was written against, e.g. \"1.0.0\". Lets the dashboard's renderer branch on old panels if the schema changes later.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "panel_id": {
+      "type": "string",
+      "description": "Globally unique, stable slug. CI rejects a PR that reuses an existing id without also setting `supersedes`.",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable panel title, shown as the card heading.",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Optional one-line caption under the title (e.g. units, period covered).",
+      "maxLength": 200
+    },
+    "forcing_type": {
+      "type": "string",
+      "description": "Which tab this panel belongs to in the Informational Overview. Drives the All / GHG / Volcanic filter.",
+      "enum": ["ghg", "volcanic"]
+    },
+    "comparison_group": {
+      "type": "string",
+      "description": "Optional. Panels sharing a comparison_group are eligible to be shown together / toggled against each other by the dashboard (e.g. two different ERF estimates for CO2). Omit if this panel stands alone.",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "supersedes": {
+      "type": "string",
+      "description": "Optional. panel_id of an older panel this one replaces. The older panel's status should be set to \"deprecated\" in the same PR.",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "chart_type": {
+      "type": "string",
+      "description": "Selects which renderer in the dashboard draws this panel. Add new values here (and a matching renderer) rather than overloading an existing one.",
+      "enum": [
+        "line",
+        "band",
+        "bar_breakdown",
+        "zonal_height_heatmap",
+        "scatter",
+        "sparkline"
+      ]
+    },
+    "analysis_level": {
+      "type": "string",
+      "description": "Distinguishes forcing INPUT (prescribed, harmonized across models — e.g. GHG concentrations) from MODEL RESPONSE (varies by model's own physics — e.g. how a model's radiation scheme responds to prescribed aerosol). Mixing these on one uncertainty band is misleading, so the renderer and any future comparison view key off this field.",
+      "enum": ["forcing_input", "model_response"]
+    },
+    "x_axis": {
+      "type": "object",
+      "required": ["label", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "unit": { "type": "string" },
+        "scale": { "type": "string", "enum": ["linear", "log"], "default": "linear" },
+        "domain": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "y_axis": {
+      "type": "object",
+      "required": ["label", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "unit": { "type": "string" },
+        "scale": { "type": "string", "enum": ["linear", "log"], "default": "linear" },
+        "domain": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "color_role": {
+      "type": "string",
+      "description": "Semantic color hint for the renderer's shared palette — not a literal hex value. Keeps color consistent across panels made by different people.",
+      "enum": ["ghg", "volcanic", "solar", "aerosol", "neutral"]
+    },
+    "annotations": {
+      "type": "array",
+      "description": "Vertical markers on the x-axis (eruptions, policy events, etc).",
+      "items": {
+        "type": "object",
+        "required": ["x", "label", "style"],
+        "additionalProperties": false,
+        "properties": {
+          "x": { "type": "number" },
+          "label": { "type": "string" },
+          "style": { "type": "string", "enum": ["eruption", "policy", "neutral"] }
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "object",
+      "description": "Optional shaded band. `source` must be set whenever this is present — see analysis_level note above for why reconstruction vs. inter-model spread can't be conflated.",
+      "required": ["source", "lo", "hi"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["reconstruction", "inter-model_spread", "parametric"]
+        },
+        "lo": { "type": "array", "items": { "type": "number" } },
+        "hi": { "type": "array", "items": { "type": "number" } }
+      }
+    },
+    "confidence_regime": {
+      "type": "array",
+      "description": "Optional. Marks stretches of the x-axis with differing data provenance/confidence (e.g. satellite era vs. model-derived era).",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "from": { "type": "number" },
+          "to": { "type": "number" },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "description": "The plotting-ready series itself. Shape depends on chart_type (e.g. line/band use x+y; bar_breakdown uses categories; zonal_height_heatmap uses a 2D grid) — validated structurally by scripts/validate_panel.py beyond what this schema enforces generically.",
+      "minProperties": 1
+    },
+    "meta": {
+      "type": "object",
+      "description": "Provenance block. Everything here should let someone reproduce or audit the panel without asking the author.",
+      "required": ["method", "method_version", "generated_at", "author"],
+      "additionalProperties": false,
+      "properties": {
+        "drs": {
+          "type": "string",
+          "description": "Full input4MIPs Data Reference Syntax string this panel was computed from, e.g. 'input4MIPs.CMIP7.CMIP.UOEXETER.UOEXETER-CMIP-1-1-3.atmos.mon.saod.gn'. Omit only if the panel used no CMIP source data."
+        },
+        "mip_era": {
+          "type": "string",
+          "description": "e.g. CMIP6, CMIP7, CMIP6Plus, CMIP7Plus."
+        },
+        "production_ready": {
+          "type": "boolean",
+          "description": "False for any mip_era flagged by input4MIPs as test/transitional data (e.g. CMIP6Plus). The dashboard renders a visible badge when this is false — never silently."
+        },
+        "baseline_period": {
+          "type": "array",
+          "description": "[start_year, end_year] used as the reference/pre-industrial period, when the method needs one.",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "variant": {
+          "type": "string",
+          "description": "CMIP ensemble member id, e.g. r1i1p1f1. Omit if not applicable (e.g. a prescribed-forcing panel with no ensemble)."
+        },
+        "method": {
+          "type": "string",
+          "description": "Slug identifying the computation, e.g. 'erf_etminan2016'."
+        },
+        "method_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "params": {
+          "type": "object",
+          "description": "The parameters this run was called with (formula choice, species, date range, etc). Free-form — whatever the method needs to be reproducible."
+        },
+        "citation": {
+          "type": "string",
+          "description": "Reference for the underlying dataset or method, e.g. 'Jörimann et al. (2026), GMD'."
+        },
+        "author": {
+          "type": "string",
+          "description": "Author identifier — GitHub handle or email is fine."
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "description": "draft: visible only in preview builds. published: shown on the live dashboard. deprecated: superseded, hidden by default but kept for history. retracted: known wrong, hidden and flagged if linked directly.",
+      "enum": ["draft", "published", "deprecated", "retracted"]
+    }
+  }
+}

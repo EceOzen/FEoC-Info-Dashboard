@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "feoc_panels"
+version = "1.0.0"
+description = "Shared PanelArtifact contract for FEoC dashboard method scripts."
+requires-python = ">=3.10"
+dependencies = [
+    "jsonschema>=4.0",
+]
+
+[tool.setuptools]
+packages = ["feoc_panels"]
+
+[tool.setuptools.package-data]
+feoc_panels = []

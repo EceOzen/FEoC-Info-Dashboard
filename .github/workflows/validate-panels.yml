@@ -1,0 +1,31 @@
+name: Validate panels
+
+# Runs on every PR that touches a panel file. Blocks merge on any schema
+# violation, panel_id collision, or oversized file — see
+# scripts/validate_panel.py for the full check list. Method scripts
+# (methods/**) and dashboard files (site/index.html, etc.) don't need this
+# check, only the panel JSON output does.
+
+on:
+  pull_request:
+    paths:
+      - "site/panels/**/*.json"
+      - "schema/panel.schema.json"
+      - "scripts/validate_panel.py"
+      - "feoc_panels/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install feoc_panels
+        run: pip install -e .
+
+      - name: Validate all panels
+        run: python scripts/validate_panel.py
