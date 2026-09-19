@@ -1,16 +1,34 @@
-# Schema validation catches structural problems, but not scientific ones —
-# a physically wrong panel can still be schema-valid. These owners are the
-# required human review for their domain.
+# Schema validation catches structural problems, but not scientific ones:
+# a physically wrong panel can still be schema-valid.
 #
-# Replace the placeholder handles below with real GitHub usernames.
+# Rule of thumb: the last matching pattern wins and owners do NOT merge across
+# lines, so every line below lists @EceOzen explicitly (code review) plus the
+# domain scientist (scientific review) where relevant.
 
-/methods/ghg/          @chris-wells-github-handle
-/site/panels/ghg/       @chris-wells-github-handle
+# Default: Ece reviews everything.
+*                              @EceOzen
 
-/methods/volcanic/      @dominik-stiller-github-handle
-/site/panels/volcanic/  @dominik-stiller-github-handle
+# GHG: code review (Ece) + scientific review (Chris).
+# TODO: replace CHRIS_HANDLE with his real GitHub username, then uncomment.
+/methods/ghg/                  @EceOzen
+/site/panels/ghg/              @EceOzen
+# /methods/ghg/                @EceOzen @CHRIS_HANDLE
+# /site/panels/ghg/            @EceOzen @CHRIS_HANDLE
 
-# Contract changes affect both domains — require agreement from both,
-# plus whoever owns the pipeline architecture.
-/schema/panel.schema.json  @chris-wells-github-handle @dominik-stiller-github-handle @ece-github-handle
-/feoc_panels/               @ece-github-handle
+# Volcanic: code review (Ece) + scientific review (Dominik).
+# TODO: replace DOMINIK_HANDLE with his real GitHub username, then uncomment.
+/methods/volcanic/             @EceOzen
+/site/panels/volcanic/         @EceOzen
+# /methods/volcanic/           @EceOzen @DOMINIK_HANDLE
+# /site/panels/volcanic/       @EceOzen @DOMINIK_HANDLE
+
+# Contract changes affect both domains: Ece + both scientists.
+# TODO: once handles are known, use:
+# /schema/panel.schema.json    @EceOzen @CHRIS_HANDLE @DOMINIK_HANDLE
+/schema/panel.schema.json      @EceOzen
+
+# Pipeline code, CI and dashboard: Ece only (covered by the * line above,
+# listed here for clarity).
+/feoc_panels/                  @EceOzen
+/scripts/                      @EceOzen
+/.github/                      @EceOzen
