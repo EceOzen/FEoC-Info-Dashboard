@@ -10,12 +10,13 @@ forcing formulas, the actual zonal reduction) belongs in the method scripts,
 not here.
 """
 
-from .contract import PanelArtifact, write_panel, validate
+from .contract import PanelArtifact, AssetSpec, write_panel, validate
 from .io import parse_drs, open_lazy, PRODUCTION_READY_ERAS
 from .citation import CITATIONS
 
 __all__ = [
     "PanelArtifact",
+    "AssetSpec",
     "write_panel",
     "validate",
     "parse_drs",

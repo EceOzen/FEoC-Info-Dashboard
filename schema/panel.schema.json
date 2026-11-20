@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://feoc-dashboard/schema/panel.schema.json",
   "title": "PanelArtifact",
-  "description": "The contract every FEoC method script writes to. One JSON file = one dashboard panel. Written by feoc_panels.write_panel(), checked by scripts/validate_panel.py at PR time, and consumed by the dashboard's generic chart_type-keyed renderer.",
+  "description": "The contract every FEoC method script writes to. One JSON file = one dashboard panel. Written by feoc_panels.write_panel(), checked by scripts/validate_panel.py at PR time, and consumed by the dashboard's generic chart_type-keyed renderer. Schema 1.1.0 adds chart_type 'asset' (ready-made files) and the hierarchy fields section/prominence/order/parent/key_message.",
   "type": "object",
   "required": [
     "schema_version",
@@ -11,9 +11,6 @@
     "forcing_type",
     "chart_type",
     "analysis_level",
-    "x_axis",
-    "y_axis",
-    "data",
     "meta",
     "status"
   ],
@@ -45,7 +42,10 @@
     "forcing_type": {
       "type": "string",
       "description": "Which tab this panel belongs to in the Informational Overview. Drives the All / GHG / Volcanic filter.",
-      "enum": ["ghg", "volcanic"]
+      "enum": [
+        "ghg",
+        "volcanic"
+      ]
     },
     "comparison_group": {
       "type": "string",
@@ -57,34 +57,87 @@
       "description": "Optional. panel_id of an older panel this one replaces. The older panel's status should be set to \"deprecated\" in the same PR.",
       "pattern": "^[a-z0-9][a-z0-9_-]*$"
     },
+    "section": {
+      "type": "string",
+      "description": "Which story section of the dashboard this panel belongs to. Must be an `id` listed in site/sections.json (CI checks this). Panels without a section are shown at the end under 'More panels'.",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "prominence": {
+      "type": "string",
+      "description": "How prominent the panel is inside its section. headline: full-width lead figure of the section (use sparingly, ideally one per section). primary: normal card. supporting: detail/extra evidence, collapsed by default (under its `parent` panel if set, otherwise at the bottom of the section).",
+      "enum": [
+        "headline",
+        "primary",
+        "supporting"
+      ],
+      "default": "primary"
+    },
+    "order": {
+      "type": "integer",
+      "description": "Sort position inside the section and prominence level; lower comes first. Default 100.",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 100
+    },
+    "parent": {
+      "type": "string",
+      "description": "Optional, only for prominence=supporting. panel_id of the headline/primary panel this one adds detail to; it is then shown folded inside that panel's card. Must be in the same section.",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "key_message": {
+      "type": "string",
+      "description": "One plain-language sentence a non-specialist can take away from this panel, shown prominently above the chart. E.g. 'Since 1990 the warming effect of CO2 has roughly doubled.'",
+      "minLength": 10,
+      "maxLength": 220
+    },
     "chart_type": {
       "type": "string",
-      "description": "Selects which renderer in the dashboard draws this panel. Add new values here (and a matching renderer) rather than overloading an existing one.",
+      "description": "Selects which renderer in the dashboard draws this panel. Add new values here (and a matching renderer) rather than overloading an existing one. Use \"asset\" when the panel ships a ready-made file (image, Plotly JSON, HTML, video, PDF, CSV, notebook) instead of a data series; then the `asset` block replaces `data`/`x_axis`/`y_axis`.",
       "enum": [
         "line",
         "band",
         "bar_breakdown",
         "zonal_height_heatmap",
         "scatter",
-        "sparkline"
+        "sparkline",
+        "asset"
       ]
     },
     "analysis_level": {
       "type": "string",
       "description": "Distinguishes forcing INPUT (prescribed, harmonized across models — e.g. GHG concentrations) from MODEL RESPONSE (varies by model's own physics — e.g. how a model's radiation scheme responds to prescribed aerosol). Mixing these on one uncertainty band is misleading, so the renderer and any future comparison view key off this field.",
-      "enum": ["forcing_input", "model_response"]
+      "enum": [
+        "forcing_input",
+        "model_response"
+      ]
     },
     "x_axis": {
       "type": "object",
-      "required": ["label", "unit"],
+      "required": [
+        "label",
+        "unit"
+      ],
       "additionalProperties": false,
       "properties": {
-        "label": { "type": "string" },
-        "unit": { "type": "string" },
-        "scale": { "type": "string", "enum": ["linear", "log"], "default": "linear" },
+        "label": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "string",
+          "enum": [
+            "linear",
+            "log"
+          ],
+          "default": "linear"
+        },
         "domain": {
           "type": "array",
-          "items": { "type": "number" },
+          "items": {
+            "type": "number"
+          },
           "minItems": 2,
           "maxItems": 2
         }
@@ -92,15 +145,31 @@
     },
     "y_axis": {
       "type": "object",
-      "required": ["label", "unit"],
+      "required": [
+        "label",
+        "unit"
+      ],
       "additionalProperties": false,
       "properties": {
-        "label": { "type": "string" },
-        "unit": { "type": "string" },
-        "scale": { "type": "string", "enum": ["linear", "log"], "default": "linear" },
+        "label": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "string",
+          "enum": [
+            "linear",
+            "log"
+          ],
+          "default": "linear"
+        },
         "domain": {
           "type": "array",
-          "items": { "type": "number" },
+          "items": {
+            "type": "number"
+          },
           "minItems": 2,
           "maxItems": 2
         }
@@ -109,34 +178,73 @@
     "color_role": {
       "type": "string",
       "description": "Semantic color hint for the renderer's shared palette — not a literal hex value. Keeps color consistent across panels made by different people.",
-      "enum": ["ghg", "volcanic", "solar", "aerosol", "neutral"]
+      "enum": [
+        "ghg",
+        "volcanic",
+        "solar",
+        "aerosol",
+        "neutral"
+      ]
     },
     "annotations": {
       "type": "array",
       "description": "Vertical markers on the x-axis (eruptions, policy events, etc).",
       "items": {
         "type": "object",
-        "required": ["x", "label", "style"],
+        "required": [
+          "x",
+          "label",
+          "style"
+        ],
         "additionalProperties": false,
         "properties": {
-          "x": { "type": "number" },
-          "label": { "type": "string" },
-          "style": { "type": "string", "enum": ["eruption", "policy", "neutral"] }
+          "x": {
+            "type": "number"
+          },
+          "label": {
+            "type": "string"
+          },
+          "style": {
+            "type": "string",
+            "enum": [
+              "eruption",
+              "policy",
+              "neutral"
+            ]
+          }
         }
       }
     },
     "uncertainty": {
       "type": "object",
       "description": "Optional shaded band. `source` must be set whenever this is present — see analysis_level note above for why reconstruction vs. inter-model spread can't be conflated.",
-      "required": ["source", "lo", "hi"],
+      "required": [
+        "source",
+        "lo",
+        "hi"
+      ],
       "additionalProperties": false,
       "properties": {
         "source": {
           "type": "string",
-          "enum": ["reconstruction", "inter-model_spread", "parametric"]
+          "enum": [
+            "reconstruction",
+            "inter-model_spread",
+            "parametric"
+          ]
         },
-        "lo": { "type": "array", "items": { "type": "number" } },
-        "hi": { "type": "array", "items": { "type": "number" } }
+        "lo": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "hi": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
       }
     },
     "confidence_regime": {
@@ -144,12 +252,22 @@
       "description": "Optional. Marks stretches of the x-axis with differing data provenance/confidence (e.g. satellite era vs. model-derived era).",
       "items": {
         "type": "object",
-        "required": ["from", "to", "label"],
+        "required": [
+          "from",
+          "to",
+          "label"
+        ],
         "additionalProperties": false,
         "properties": {
-          "from": { "type": "number" },
-          "to": { "type": "number" },
-          "label": { "type": "string" }
+          "from": {
+            "type": "number"
+          },
+          "to": {
+            "type": "number"
+          },
+          "label": {
+            "type": "string"
+          }
         }
       }
     },
@@ -161,7 +279,12 @@
     "meta": {
       "type": "object",
       "description": "Provenance block. Everything here should let someone reproduce or audit the panel without asking the author.",
-      "required": ["method", "method_version", "generated_at", "author"],
+      "required": [
+        "method",
+        "method_version",
+        "generated_at",
+        "author"
+      ],
       "additionalProperties": false,
       "properties": {
         "drs": {
@@ -179,7 +302,9 @@
         "baseline_period": {
           "type": "array",
           "description": "[start_year, end_year] used as the reference/pre-industrial period, when the method needs one.",
-          "items": { "type": "integer" },
+          "items": {
+            "type": "integer"
+          },
           "minItems": 2,
           "maxItems": 2
         },
@@ -216,7 +341,176 @@
     "status": {
       "type": "string",
       "description": "draft: visible only in preview builds. published: shown on the live dashboard. deprecated: superseded, hidden by default but kept for history. retracted: known wrong, hidden and flagged if linked directly.",
-      "enum": ["draft", "published", "deprecated", "retracted"]
+      "enum": [
+        "draft",
+        "published",
+        "deprecated",
+        "retracted"
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "description": "Required when chart_type is \"asset\". Points at a ready-made file under site/assets/ that the dashboard displays as-is (or, for csv, draws itself).",
+      "required": [
+        "path",
+        "format",
+        "alt_text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path relative to site/, must start with 'assets/'. methods/generic/from_asset.py copies your file there for you.",
+          "pattern": "^assets/[A-Za-z0-9._/-]+$"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "svg",
+            "png",
+            "webp",
+            "jpg",
+            "gif",
+            "plotly_json",
+            "html",
+            "mp4",
+            "webm",
+            "pdf",
+            "csv",
+            "ipynb"
+          ],
+          "description": "svg/png/webp/jpg/gif: static image. plotly_json: output of fig.write_json(), drawn interactively. html: self-contained page (Bokeh, Folium...), shown in a sandboxed frame. mp4/webm: animation/video. pdf: paper figure, shown as preview that opens the full file. csv: table the dashboard plots itself (see `csv`). ipynb: Jupyter notebook; its figure outputs are shown with the code that made them."
+        },
+        "alt_text": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500,
+          "description": "What the figure shows, for screen readers and when the file can't load. Required for every format."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 150,
+          "maximum": 1200,
+          "description": "Optional display height in px for html/plotly_json/pdf frames. Images and video keep their own aspect ratio."
+        },
+        "poster": {
+          "type": "string",
+          "pattern": "^assets/[A-Za-z0-9._/-]+$",
+          "description": "Optional still image shown before a video plays."
+        },
+        "preview": {
+          "type": "string",
+          "pattern": "^assets/[A-Za-z0-9._/-]+$",
+          "description": "Optional preview image for pdf. If omitted, CI generates <path>.preview.png at deploy time."
+        },
+        "csv": {
+          "type": "object",
+          "description": "Only for format=csv: which columns to draw. Give lo+hi together to draw an uncertainty band.",
+          "required": [
+            "x",
+            "y"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "string"
+            },
+            "y": {
+              "type": "string"
+            },
+            "lo": {
+              "type": "string"
+            },
+            "hi": {
+              "type": "string"
+            },
+            "render_as": {
+              "type": "string",
+              "enum": [
+                "line",
+                "scatter"
+              ],
+              "default": "line"
+            }
+          }
+        },
+        "cell": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Only for format=ipynb: index of the code cell whose output to show. Default: every cell that has a figure output."
+        }
+      }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "chart_type": {
+            "const": "asset"
+          }
+        },
+        "required": [
+          "chart_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "asset"
+        ],
+        "properties": {
+          "asset": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "format": {
+                      "const": "csv"
+                    }
+                  },
+                  "required": [
+                    "format"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "csv"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "else": {
+        "required": [
+          "x_axis",
+          "y_axis",
+          "data"
+        ],
+        "not": {
+          "required": [
+            "asset"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "parent"
+        ]
+      },
+      "then": {
+        "properties": {
+          "prominence": {
+            "const": "supporting"
+          }
+        },
+        "required": [
+          "prominence"
+        ]
+      }
+    }
+  ]
 }

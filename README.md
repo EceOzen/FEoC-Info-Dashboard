@@ -81,6 +81,73 @@ panel was produced. Write something a reviewer could actually check
 ("FaIR v2.1, default config, historical run, notebook X in repo Y commit
 abc123"), not "computed elsewhere".
 
+### Already have the finished figure?
+
+If you already made the figure itself, `methods/generic/from_asset.py` puts
+it on the dashboard as it is. It copies the file to
+`site/assets/<forcing_type>/<panel_id>.<ext>` and writes the panel JSON next
+to the others. The format is taken from the file extension.
+
+| Format | Make it with | How the dashboard shows it |
+|---|---|---|
+| `.svg` `.png` `.webp` `.jpg` | `fig.savefig(...)` | Image that scales to the card (SVG stays sharp) |
+| `.gif` | `PillowWriter` | Looping image |
+| `.json` (Plotly) | `fig.write_json(...)` | Interactive chart (zoom, hover), drawn with plotly.js |
+| `.html` | Bokeh `save()`, Folium `m.save()` | Sandboxed frame; scripts run, but can't touch the dashboard |
+| `.mp4` `.webm` | `FFMpegWriter` | Muted, looping video with controls; optional `--poster` |
+| `.pdf` | paper figure | Preview image (CI renders page 1) that opens the full PDF |
+| `.csv` `.tsv` | any | The dashboard draws it itself: `--csv-x/--csv-y`, plus `--csv-lo/--csv-hi` for a band |
+| `.ipynb` | Jupyter, **saved with outputs** | The figure outputs, with a "show the code" fold |
+
+```bash
+python methods/generic/from_asset.py --input saod_map.svg \
+    --forcing-type volcanic --panel-id saod_pinatubo_map \
+    --title "Stratospheric aerosol after Pinatubo" \
+    --alt-text "Map of stratospheric aerosol optical depth in 1992, highest in the tropics" \
+    --section volcanic --prominence headline \
+    --key-message "Pinatubo's aerosol veil covered the whole tropics within months." \
+    --analysis-level forcing_input \
+    --method-note "Plotted from GloSSAC v2.2, notebook X commit abc123" \
+    --source "github.com/you/repo" --author your-handle
+```
+
+`--alt-text` is required for every format: it is what screen readers read
+and what shows if the file can't load. CI checks the file exists, sits under
+`site/assets/`, matches its format and stays under a size cap (5 MB images,
+10 MB Plotly/HTML/PDF/CSV/notebooks, 25 MB video).
+
+To see one example of every format on your own machine:
+
+```bash
+python examples/make_asset_examples.py        # synthetic, status=draft
+python scripts/build_manifest.py --include-drafts && python scripts/build_assets.py
+cd site && python3 -m http.server 8000
+python examples/make_asset_examples.py --clean   # remove them again
+```
+
+## Where a panel sits on the page
+
+The dashboard is organised as a story, not a gallery. Every panel can say
+where it belongs:
+
+- **`section`**: which part of the story it belongs to. Sections and their
+  short intro texts are listed, in order, in `site/sections.json`. To add a
+  section, add it there in the same PR.
+- **`prominence`**:
+  - `headline`: the lead figure of the section, full width. Ideally one per section.
+  - `primary`: a normal card. This is the default.
+  - `supporting`: extra detail, folded away until the reader opens it.
+- **`parent`** (supporting panels only): the panel it adds detail to. It is
+  then folded inside that panel's card. Supporting panels without a parent
+  fold together at the end of their section.
+- **`order`**: position inside the section, lower first (default 100).
+- **`key_message`**: one plain-language sentence shown above the chart.
+  Write it for someone who doesn't know what ERF is.
+
+All of these are optional, so older panels keep working. A panel without a
+`section` shows at the end under "More panels". CI checks that sections and
+parents exist and that a parent isn't itself a supporting panel.
+
 ## Repo layout
 
 | Path | What it is |
@@ -90,10 +157,15 @@ abc123"), not "computed elsewhere".
 | `methods/ghg/` | GHG method scripts. (see `.github/CODEOWNERS`). |
 | `methods/volcanic/` | Volcanic method scripts. |
 | `methods/generic/from_series.py` | For a series already computed outside this repo — wraps it into a valid panel without writing a method script. See "Already have a computed series?" above. |
-| `scripts/validate_panel.py` | Runs in CI on every PR touching `site/panels/**`. |
+| `methods/generic/from_asset.py` | For a finished figure (image, Plotly, HTML, video, PDF, CSV, notebook). See "Already have the finished figure?" above. |
+| `examples/make_asset_examples.py` | Generates one synthetic draft panel per asset format, for local preview and as copy-paste templates. |
+| `scripts/build_assets.py` | Runs at deploy; renders PDF previews. |
+| `site/sections.json` | The story sections, in display order, with their intro texts. |
+| `site/assets/<ghg\|volcanic>/` | Files for `chart_type: "asset"` panels. |
+| `scripts/validate_panel.py` | Runs in CI on every PR touching `site/panels/**`, `site/assets/**` or `site/sections.json`. |
 | `scripts/build_manifest.py` | Runs in CI on merge to `main`; regenerates `site/manifest.json`. |
-| `site/index.html` | The dashboard itself — a single static HTML file, no build step, no framework. |
-| `site/panels/<ghg\|volcanic>/` | Where panel JSON files live. Currently empty except for `.gitkeep`. |
+| `site/index.html` | The dashboard itself — a single static HTML file, no build step, no framework (plotly.js is loaded from its CDN only when a Plotly panel is on the page). |
+| `site/panels/<ghg\|volcanic>/` | Where panel JSON files live. |
 | `.github/workflows/` | `validate-panels.yml` (PR check) and `deploy-pages.yml` (deploy on merge). |
 | `.github/CODEOWNERS` | Required-reviewer mapping — **replace the placeholder GitHub handles before this goes live.** |
 
@@ -106,6 +178,8 @@ abc123"), not "computed elsewhere".
 - The dashboard's six chart-type renderers (line, band, bar_breakdown, zonal_height_heatmap, scatter, sparkline) — all rendered and visually checked against synthetic data.
 - The draft → published → manifest → dashboard flow.
 - `methods/generic/from_series.py` — takes a ready series (CSV/TSV/NetCDF) and writes a valid panel; useful for anything computed outside this repo (e.g. FaIR runs).
+- `methods/generic/from_asset.py` and the twelve asset formats — each rendered and checked in a browser (desktop and phone width) with the synthetic examples.
+- Sections / prominence / parent layout, including the folded supporting panels.
 
 **Stubs to fill in next (see docstrings in each file for exactly what's needed):**
 - `feoc_panels/io.py::open_lazy()` — the actual xarray/dask data access.

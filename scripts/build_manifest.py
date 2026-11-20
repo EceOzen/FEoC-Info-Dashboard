@@ -48,6 +48,11 @@ def build_manifest(include_drafts: bool = False) -> dict:
                 "status": status,
                 "path": str(path.relative_to(REPO_ROOT / "site")),
                 "production_ready": panel.get("meta", {}).get("production_ready"),
+                "section": panel.get("section"),
+                "prominence": panel.get("prominence", "primary"),
+                "order": panel.get("order", 100),
+                "parent": panel.get("parent"),
+                "asset_format": panel.get("asset", {}).get("format"),
             }
         )
 

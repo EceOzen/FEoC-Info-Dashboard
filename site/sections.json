@@ -1,0 +1,25 @@
+{
+  "_comment": "Story sections of the dashboard, in display order. Panels pick one via their `section` field. Maintained by the dashboard lead; titles and intros are placeholders for the science team to rewrite.",
+  "sections": [
+    {
+      "id": "overview",
+      "title": "The big picture",
+      "intro": "How much each forcing agent pushes the climate, and how that has changed since pre-industrial times."
+    },
+    {
+      "id": "ghg",
+      "title": "Greenhouse gases",
+      "intro": "Concentrations of long-lived greenhouse gases and the radiative forcing they produce."
+    },
+    {
+      "id": "volcanic",
+      "title": "Volcanic forcing",
+      "intro": "Large eruptions inject aerosol into the stratosphere and cool the planet for a few years."
+    },
+    {
+      "id": "comparisons",
+      "title": "Comparing methods and datasets",
+      "intro": "Where different formulas, datasets or CMIP versions agree, and where they don't."
+    }
+  ]
+}

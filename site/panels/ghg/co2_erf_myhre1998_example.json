@@ -5,6 +5,9 @@
   "forcing_type": "ghg",
   "chart_type": "line",
   "analysis_level": "forcing_input",
+  "section": "ghg",
+  "prominence": "primary",
+  "order": 30,
   "x_axis": {
     "label": "Year",
     "unit": "CE",

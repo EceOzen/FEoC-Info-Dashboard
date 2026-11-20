@@ -67,7 +67,83 @@
   main{max-width:1200px;margin:0 auto;padding:28px 32px 60px;}
 
   .grid{
-    display:grid;grid-template-columns:repeat(auto-fill, minmax(420px, 1fr));gap:18px;
+    display:grid;grid-template-columns:repeat(auto-fill, minmax(min(420px, 100%), 1fr));gap:18px;
+  }
+
+  /* ---- Story sections & hierarchy ---- */
+  .story-section{margin:0 0 44px;}
+  .section-head{margin:0 0 16px;max-width:760px;}
+  .section-head h2{font-family:Georgia,serif;font-size:21px;color:var(--ink);margin:0 0 6px;}
+  .section-head p{margin:0;font-size:13.5px;color:var(--mute);line-height:1.6;}
+  .section-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(min(420px, 100%), 1fr));gap:18px;}
+
+  .key-message{
+    font-family:Georgia,serif;font-size:15px;line-height:1.45;color:var(--ink);
+    margin:2px 0 12px;padding-left:10px;border-left:3px solid var(--amber);
+  }
+
+  .panel-card.headline{
+    grid-column:1 / -1;display:grid;grid-template-columns:minmax(220px, 1fr) 2.2fr;gap:8px 28px;
+    padding:22px 24px;border-color:#C9D2D4;
+  }
+  .panel-card.headline h3{font-size:17px;}
+  .panel-card.headline .key-message{font-size:18px;}
+  .panel-card.headline .meta-row,
+  .panel-card.headline .card-children{grid-column:1 / -1;}
+  @media (max-width: 820px){
+    .panel-card.headline{grid-template-columns:1fr;}
+  }
+
+  details.more, details.card-children{margin-top:14px;}
+  details.more > summary, details.card-children > summary{
+    cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink);list-style:none;
+    display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);
+    border-radius:16px;background:#fff;
+  }
+  details.more > summary::-webkit-details-marker,
+  details.card-children > summary::-webkit-details-marker{display:none;}
+  details.more > summary::before, details.card-children > summary::before{content:"\25B8";font-size:10px;transition:transform .15s;}
+  details[open].more > summary::before, details[open].card-children > summary::before{transform:rotate(90deg);}
+  details.more > .section-grid{margin-top:14px;}
+  details.card-children > .child-grid{
+    margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill, minmax(min(300px, 100%), 1fr));gap:12px;
+  }
+  .panel-card.supporting{padding:14px 16px;background:#FCFDFD;}
+  .panel-card.supporting h3{font-size:13px;}
+
+  .card-head .tags{display:flex;gap:4px;flex-shrink:0;}
+  .tag.draft{background:var(--amber-light);color:var(--ink-dark);}
+
+  /* ---- Ready-made assets ---- */
+  .asset-img{display:block;width:100%;height:auto;border-radius:6px;}
+  .panel-card.headline .asset-img{max-height:70vh;object-fit:contain;}
+  .asset-frame{display:block;width:100%;border:1px solid var(--panel);border-radius:6px;background:#fff;}
+  .asset-video{display:block;width:100%;height:auto;border-radius:6px;background:#000;}
+  .pdf-preview{display:block;position:relative;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+  .pdf-preview img{display:block;width:100%;height:auto;}
+  .pdf-preview .pdf-badge{
+    position:absolute;top:8px;right:8px;font-size:10px;font-weight:700;letter-spacing:.04em;
+    background:var(--ink);color:#fff;padding:3px 8px;border-radius:9px;
+  }
+  .asset-actions{margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;}
+  .asset-actions a{color:var(--ink);font-weight:600;text-decoration:none;border-bottom:1px solid var(--amber-light);}
+  .asset-actions a:hover{border-bottom-color:var(--amber);}
+  .asset-note{font-size:12px;color:var(--mute);}
+  .nb-output + .nb-output{margin-top:12px;}
+  details.nb-code{margin-top:10px;}
+  details.nb-code > summary{cursor:pointer;font-size:11.5px;font-weight:600;color:var(--ink);}
+  details.nb-code pre{
+    margin:8px 0 0;max-height:320px;overflow:auto;background:var(--ink-dark);color:#E3EAEC;
+    font-size:11.5px;line-height:1.5;padding:12px 14px;border-radius:6px;font-family:"SF Mono",Consolas,monospace;
+  }
+
+  @media (max-width: 600px){
+    header{padding:22px 18px 18px;}
+    header h1{font-size:22px;}
+    .status-line, .tabs{padding-left:18px;padding-right:18px;}
+    main{padding:20px 14px 48px;}
+    .panel-card, .panel-card.headline{padding:16px 14px;}
+    .tab-btn{padding:10px 12px;}
   }
 
   .panel-card{
@@ -108,7 +184,6 @@
   .meta-row b{color:var(--ink-dark);font-weight:600;}
 
   .empty-state{
-    grid-column:1 / -1;
     border:1px dashed var(--border);border-radius:12px;padding:48px 32px;text-align:center;
     background:#fff;
   }
@@ -120,7 +195,7 @@
   }
 
   .fetch-error{
-    grid-column:1 / -1;border:1px solid var(--volcanic);border-radius:12px;padding:24px;
+    border:1px solid var(--volcanic);border-radius:12px;padding:24px;
     background:rgba(181,86,60,.06);
   }
   .fetch-error h3{margin:0 0 8px;font-size:14px;color:var(--volcanic);}
@@ -136,7 +211,7 @@
 <header>
   <p class="eyebrow">Fresh Eyes on CMIP Forcings</p>
   <h1>Forcing Evaluation Dashboard</h1>
-  <p>Informational Overview. Every panel here is pushed by a method script under <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px;">methods/</code> and merged via PR — see the design doc for how to add one.</p>
+  <p>Informational Overview. Every panel here is pushed by a script under <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px;">methods/</code> and merged via PR — see the README for how to add one.</p>
 </header>
 
 <div class="status-line" id="status-line">
@@ -151,27 +226,30 @@
 </div>
 
 <main>
-  <div class="grid" id="panel-grid">
-    <!-- populated by loadDashboard() -->
+  <div id="panel-root">
+    <!-- populated by loadDashboard(): one <section> per entry in sections.json -->
   </div>
 </main>
 
 <script>
 /* ============================================================
-   FEoC Dashboard — Informational Overview skeleton.
+   FEoC Dashboard — Informational Overview.
 
    This page has NO embedded data. On load it fetches:
      manifest.json               — the index of published panels
+     sections.json               — the story sections, in display order
      <panel.path> (per entry)    — each panel's full PanelArtifact JSON
+   plus, for chart_type "asset", the file the panel points at.
 
-   Both are produced by scripts/build_manifest.py from whatever method
-   scripts have written under site/panels/. An empty grid with the
-   "no panels yet" message below is the CORRECT state until someone
-   opens a PR with a real panel.
+   Layout: panels are grouped by `section` (order from sections.json).
+   Inside a section: `headline` panels span the full width, `primary`
+   panels form the grid, `supporting` panels are folded away — inside
+   their `parent` panel's card if they have one, otherwise in a
+   "More detail" fold at the end of the section. `order` sorts within
+   each level.
 
-   chart_type -> renderer mapping lives in RENDERERS at the bottom.
-   Add a new chart_type by adding both a schema enum value
-   (schema/panel.schema.json) and a renderer function here.
+   chart_type -> renderer mapping lives in RENDERERS at the bottom;
+   asset formats -> renderer mapping lives in ASSET_RENDERERS.
    ============================================================ */
 
 const CHART_COLORS = {
@@ -182,8 +260,17 @@ const CHART_COLORS = {
   neutral: "#5C7A85",
 };
 
+// Pinned to the plotly.js version bundled with plotly.py 7.x, so figures
+// saved with fig.write_json() render the same as in the author's notebook.
+const PLOTLY_SRC = "https://cdn.plot.ly/plotly-4.1.1.min.js";
+
+const PROMINENCE_RANK = { headline: 0, primary: 1, supporting: 2 };
+const OTHER_SECTION = { id: "_other", title: "More panels", intro: "" };
+
 let ALL_PANELS = [];       // [{ manifestEntry, artifact }]
+let SECTIONS = [];         // from sections.json
 let CURRENT_FILTER = "all";
+let DRAWN = [];            // [{ wrap, draw, resizable }] for redraw on resize
 
 async function loadDashboard() {
   const statusLine = document.getElementById("status-line");
@@ -201,8 +288,15 @@ async function loadDashboard() {
     return;
   }
 
+  try {
+    const res = await fetch("sections.json", { cache: "no-store" });
+    if (res.ok) SECTIONS = (await res.json()).sections || [];
+  } catch (err) {
+    console.warn("sections.json not loaded; showing panels without sections.", err);
+  }
+
   statusText.textContent =
-    `${manifest.panel_count} published panel(s) · built ${manifest.generated_by ? "by " + manifest.generated_by : ""}`;
+    `${manifest.panel_count} ${manifest.includes_drafts ? "panel(s) incl. drafts (preview build)" : "published panel(s)"}`;
 
   const loaded = await Promise.all(
     manifest.panels.map(async (entry) => {
@@ -224,14 +318,14 @@ async function loadDashboard() {
 }
 
 function renderFetchError(err) {
-  const grid = document.getElementById("panel-grid");
-  grid.innerHTML = "";
+  const root = document.getElementById("panel-root");
+  root.innerHTML = "";
   const div = document.createElement("div");
   div.className = "fetch-error";
   div.innerHTML = `
     <h3>Couldn't load manifest.json</h3>
     <p>
-      ${err.message}.<br><br>
+      ${escapeHtml(err.message)}.<br><br>
       If you're opening this file directly (<code>file://</code>), your browser
       blocks the fetch — that's a browser restriction, not a bug. Serve the
       <code>site/</code> directory over HTTP instead, e.g.
@@ -239,7 +333,7 @@ function renderFetchError(err) {
       open <code>http://localhost:8000</code>.
     </p>
   `;
-  grid.appendChild(div);
+  root.appendChild(div);
 }
 
 function updateCounts() {
@@ -259,20 +353,106 @@ document.getElementById("tabs").addEventListener("click", (e) => {
   render();
 });
 
-function render() {
-  const grid = document.getElementById("panel-grid");
-  grid.innerHTML = "";
+function prominenceOf(a) { return a.prominence || "primary"; }
+function byOrder(a, b) {
+  return (a.order ?? 100) - (b.order ?? 100) || a.title.localeCompare(b.title);
+}
 
-  const visible = ALL_PANELS.filter(
-    p => CURRENT_FILTER === "all" || p.artifact.forcing_type === CURRENT_FILTER
-  );
+function render() {
+  const root = document.getElementById("panel-root");
+  root.innerHTML = "";
+  DRAWN = [];
+
+  const visible = ALL_PANELS
+    .map(p => p.artifact)
+    .filter(a => CURRENT_FILTER === "all" || a.forcing_type === CURRENT_FILTER);
 
   if (visible.length === 0) {
-    grid.appendChild(renderEmptyState());
+    root.appendChild(renderEmptyState());
     return;
   }
 
-  visible.forEach(({ artifact }) => grid.appendChild(renderPanelCard(artifact)));
+  // Group by section, in sections.json order; unknown/missing -> "More panels".
+  const known = new Set(SECTIONS.map(s => s.id));
+  const groups = new Map(SECTIONS.map(s => [s.id, []]));
+  groups.set(OTHER_SECTION.id, []);
+  visible.forEach(a => groups.get(known.has(a.section) ? a.section : OTHER_SECTION.id).push(a));
+
+  const usesSections = visible.some(a => known.has(a.section));
+  const pending = [];
+
+  for (const [sectionId, panels] of groups) {
+    if (panels.length === 0) continue;
+    const meta = SECTIONS.find(s => s.id === sectionId) || OTHER_SECTION;
+    root.appendChild(renderSection(meta, panels, usesSections, pending));
+  }
+
+  // Draw charts only once their containers are in the DOM (renderers size
+  // themselves to the container width). Folded cards draw when opened.
+  requestAnimationFrame(() => pending.forEach(fn => fn()));
+}
+
+function renderSection(meta, panels, showHeading, pending) {
+  const section = document.createElement("section");
+  section.className = "story-section";
+  section.id = `section-${meta.id}`;
+
+  if (showHeading) {
+    const head = document.createElement("div");
+    head.className = "section-head";
+    head.innerHTML = `<h2>${escapeHtml(meta.title)}</h2>${meta.intro ? `<p>${escapeHtml(meta.intro)}</p>` : ""}`;
+    section.appendChild(head);
+  }
+
+  const ids = new Set(panels.map(a => a.panel_id));
+  const childrenOf = new Map();
+  const loose = [];
+  panels.filter(a => prominenceOf(a) === "supporting").sort(byOrder).forEach(a => {
+    if (a.parent && ids.has(a.parent)) {
+      if (!childrenOf.has(a.parent)) childrenOf.set(a.parent, []);
+      childrenOf.get(a.parent).push(a);
+    } else {
+      loose.push(a);
+    }
+  });
+
+  const grid = document.createElement("div");
+  grid.className = "section-grid";
+  section.appendChild(grid);
+
+  panels
+    .filter(a => prominenceOf(a) !== "supporting")
+    .sort((a, b) => PROMINENCE_RANK[prominenceOf(a)] - PROMINENCE_RANK[prominenceOf(b)] || byOrder(a, b))
+    .forEach(a => grid.appendChild(renderPanelCard(a, {
+      size: prominenceOf(a),
+      children: childrenOf.get(a.panel_id) || [],
+      pending,
+    })));
+
+  if (loose.length) {
+    const details = document.createElement("details");
+    details.className = "more";
+    details.innerHTML = `<summary>More detail · ${loose.length} panel${loose.length > 1 ? "s" : ""}</summary>`;
+    const looseGrid = document.createElement("div");
+    looseGrid.className = "section-grid";
+    const folded = [];
+    loose.forEach(a => looseGrid.appendChild(renderPanelCard(a, { size: "supporting", children: [], pending: folded })));
+    details.appendChild(looseGrid);
+    drawOnFirstOpen(details, folded);
+    // If a section has nothing but supporting panels, show them open.
+    if (grid.children.length === 0) { grid.remove(); details.open = true; pending.push(...folded); folded.length = 0; }
+    section.appendChild(details);
+  } else if (grid.children.length === 0) {
+    grid.remove();
+  }
+  return section;
+}
+
+function drawOnFirstOpen(details, fns) {
+  details.addEventListener("toggle", () => {
+    if (!details.open) return;
+    fns.splice(0).forEach(fn => fn());
+  });
 }
 
 function renderEmptyState() {
@@ -283,50 +463,91 @@ function renderEmptyState() {
     <h3>No published panels${scopeLabel} yet</h3>
     <p>Run a method script and open a PR to add one:</p>
     <p><code>python methods/ghg/erf_myhre_etminan.py --species co2 --data-ref &lt;path&gt; --author &lt;you&gt;</code></p>
-    <p><code>python methods/volcanic/saod_zonal_reduction.py --data-ref &lt;path&gt; --author &lt;you&gt;</code></p>
+    <p>Already have a finished figure (SVG, PNG, Plotly, HTML, video, PDF, CSV, notebook)?</p>
+    <p><code>python methods/generic/from_asset.py --input &lt;file&gt; ...</code></p>
     <p>Once merged, this page rebuilds automatically from <code>site/manifest.json</code>.</p>
   `;
   return div;
 }
 
-function renderPanelCard(artifact) {
-  const card = document.createElement("div");
-  card.className = "panel-card";
+function renderPanelCard(artifact, opts = {}) {
+  const size = opts.size || "primary";
+  const card = document.createElement("article");
+  card.className = `panel-card ${size}`;
+  card.id = `panel-${artifact.panel_id}`;
+
+  const text = document.createElement("div");
+  text.className = "card-text";
+  card.appendChild(text);
 
   const head = document.createElement("div");
   head.className = "card-head";
   head.innerHTML = `
     <h3>${escapeHtml(artifact.title)}</h3>
-    <span class="tag ${artifact.forcing_type}">${artifact.forcing_type}</span>
+    <span class="tags">${artifact.status === "draft" ? '<span class="tag draft">draft</span>' : ""}<span class="tag ${artifact.forcing_type}">${artifact.forcing_type}</span></span>
   `;
-  card.appendChild(head);
+  text.appendChild(head);
 
   if (artifact.subtitle) {
     const sub = document.createElement("p");
     sub.className = "subtitle";
     sub.textContent = artifact.subtitle;
-    card.appendChild(sub);
+    text.appendChild(sub);
+  }
+
+  if (artifact.key_message) {
+    const km = document.createElement("p");
+    km.className = "key-message";
+    km.textContent = artifact.key_message;
+    text.appendChild(km);
   }
 
   if (artifact.meta && artifact.meta.production_ready === false) {
     const badge = document.createElement("span");
     badge.className = "badge-nonprod";
     badge.textContent = `Not production data (${artifact.meta.mip_era || "test era"})`;
-    card.appendChild(badge);
+    text.appendChild(badge);
   }
 
+  const visual = document.createElement("div");
+  visual.className = "card-visual";
   const chartWrap = document.createElement("div");
   chartWrap.className = "chart-wrap";
-  card.appendChild(chartWrap);
+  visual.appendChild(chartWrap);
+  card.appendChild(visual);
 
+  const chartOpts = { height: size === "headline" ? 280 : size === "supporting" ? 150 : 180, size };
   const renderer = RENDERERS[artifact.chart_type];
   if (renderer) {
-    renderer(chartWrap, artifact);
+    const draw = () => {
+      try {
+        renderer(chartWrap, artifact, chartOpts);
+      } catch (err) {
+        console.error(`Renderer failed for ${artifact.panel_id}:`, err);
+        chartWrap.innerHTML = `<p class="asset-note">Couldn't draw this panel (${escapeHtml(err.message)}).</p>`;
+      }
+    };
+    DRAWN.push({ wrap: chartWrap, draw, resizable: artifact.chart_type !== "asset" || artifact.asset?.format === "csv" });
+    (opts.pending || []).push(draw);
   } else {
-    chartWrap.innerHTML = `<p style="font-size:12px;color:var(--mute);">No renderer registered for chart_type "${escapeHtml(artifact.chart_type)}" yet.</p>`;
+    chartWrap.innerHTML = `<p class="asset-note">No renderer registered for chart_type "${escapeHtml(artifact.chart_type)}" yet.</p>`;
   }
 
   card.appendChild(renderMetaRow(artifact));
+
+  const children = opts.children || [];
+  if (children.length) {
+    const details = document.createElement("details");
+    details.className = "card-children";
+    details.innerHTML = `<summary>Supporting detail · ${children.length}</summary>`;
+    const childGrid = document.createElement("div");
+    childGrid.className = "child-grid";
+    const folded = [];
+    children.forEach(c => childGrid.appendChild(renderPanelCard(c, { size: "supporting", pending: folded })));
+    details.appendChild(childGrid);
+    drawOnFirstOpen(details, folded);
+    card.appendChild(details);
+  }
 
   return card;
 }
@@ -335,13 +556,20 @@ function renderMetaRow(artifact) {
   const row = document.createElement("div");
   row.className = "meta-row";
   const m = artifact.meta || {};
+  const p = m.params || {};
   const bits = [];
-  if (m.method) bits.push(`<span><b>Method:</b> ${escapeHtml(m.method)}${m.method_version ? " v" + escapeHtml(m.method_version) : ""}</span>`);
+  if (m.method === "external_figure") {
+    if (p.source) bits.push(`<span><b>Source:</b> ${escapeHtml(p.source)}</span>`);
+  } else if (m.method) {
+    bits.push(`<span><b>Method:</b> ${escapeHtml(m.method)}${m.method_version ? " v" + escapeHtml(m.method_version) : ""}</span>`);
+  }
   if (m.mip_era) bits.push(`<span><b>Era:</b> ${escapeHtml(m.mip_era)}</span>`);
   if (m.baseline_period) bits.push(`<span><b>Baseline:</b> ${m.baseline_period[0]}–${m.baseline_period[1]}</span>`);
+  if (m.citation) bits.push(`<span><b>Cite:</b> ${escapeHtml(m.citation)}</span>`);
   if (m.author) bits.push(`<span><b>By:</b> ${escapeHtml(m.author)}</span>`);
   if (m.generated_at) bits.push(`<span>${new Date(m.generated_at).toISOString().slice(0, 10)}</span>`);
   row.innerHTML = bits.join("");
+  if (p.method_note) row.title = p.method_note;
   return row;
 }
 
@@ -350,6 +578,21 @@ function escapeHtml(s) {
   div.textContent = String(s);
   return div.innerHTML;
 }
+
+// Redraw size-dependent SVG charts when the viewport width changes.
+let _lastWidth = window.innerWidth, _resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    if (Math.abs(window.innerWidth - _lastWidth) < 40) return;
+    _lastWidth = window.innerWidth;
+    DRAWN.forEach(({ wrap, draw, resizable }) => {
+      if (!resizable || !wrap.isConnected || wrap.childElementCount === 0) return;
+      wrap.innerHTML = "";
+      draw();
+    });
+  }, 200);
+});
 
 /* ============================================================
    Chart renderers — one per chart_type in schema/panel.schema.json.
@@ -375,15 +618,20 @@ function gridLines(svg, w, h, rows = 3) {
 function colorFor(artifact) {
   return CHART_COLORS[artifact.color_role] || CHART_COLORS.neutral;
 }
+// The SVG renderers draw in real pixels of the container width, so charts
+// fill wide cards instead of sitting small and centred.
+function chartWidth(container) {
+  return Math.max(260, Math.round(container.clientWidth || 400));
+}
 
-function renderLine(container, artifact) {
+function renderLine(container, artifact, opts = {}) {
   const { x, y } = artifact.data;
   if (!x || !y || x.length === 0) {
     container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
     return;
   }
-  const W = 400, H = 180, PAD = 8;
-  const svg = el("svg", { width: "100%", height: 180, viewBox: `0 0 ${W} ${H}`, class: "hoverable" });
+  const W = chartWidth(container), H = opts.height || 180, PAD = 8;
+  const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}`, class: "hoverable" });
   const xDomain = [Math.min(...x), Math.max(...x)];
   const yDomain = [Math.min(...y), Math.max(...y)];
   const ySpan = yDomain[1] - yDomain[0] || 1;
@@ -436,9 +684,10 @@ function renderLine(container, artifact) {
     x.forEach((xi, i) => { const d = Math.abs(xi - xVal); if (d < bestDist) { bestDist = d; closest = i; } });
     const cx = xScale(x[closest]), cy = yScale(y[closest]);
     dot.setAttribute("cx", cx); dot.setAttribute("cy", cy); dot.style.display = "block";
-    tooltip.innerHTML = `<div class="tt-title">${x[closest]}</div>${artifact.y_axis.label}: ${y[closest].toFixed(4)} ${artifact.y_axis.unit || ""}`;
+    const yAx = artifact.y_axis || { label: "y", unit: "" };
+    tooltip.innerHTML = `<div class="tt-title">${escapeHtml(x[closest])}</div>${escapeHtml(yAx.label)}: ${Number(y[closest]).toFixed(4)} ${escapeHtml(yAx.unit || "")}`;
     tooltip.style.left = (cx / W) * container.clientWidth + "px";
-    tooltip.style.top = (cy / H) * 180 + "px";
+    tooltip.style.top = cy + "px";
     tooltip.classList.add("show");
   });
   overlay.addEventListener("mouseleave", () => { tooltip.classList.remove("show"); dot.style.display = "none"; });
@@ -453,15 +702,15 @@ function renderLine(container, artifact) {
   }
 }
 
-function renderBand(container, artifact) {
+function renderBand(container, artifact, opts = {}) {
   const { x, y } = artifact.data;
   const unc = artifact.uncertainty;
   if (!x || !y || x.length === 0) {
     container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
     return;
   }
-  const W = 400, H = 180, PAD = 8;
-  const svg = el("svg", { width: "100%", height: 180, viewBox: `0 0 ${W} ${H}`, class: "hoverable" });
+  const W = chartWidth(container), H = opts.height || 180, PAD = 8;
+  const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}`, class: "hoverable" });
   const allVals = unc ? [...y, ...unc.lo, ...unc.hi] : y;
   const xDomain = [Math.min(...x), Math.max(...x)];
   const yDomain = [Math.min(...allVals), Math.max(...allVals)];
@@ -497,7 +746,7 @@ function renderBarBreakdown(container, artifact) {
     container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data.</p>`;
     return;
   }
-  const W = 400, rowH = 24, H = categories.length * rowH + 20;
+  const W = chartWidth(container), rowH = 24, H = categories.length * rowH + 20;
   const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
   const xMin = Math.min(0, ...values), xMax = Math.max(0, ...values);
   const labelColW = 110;
@@ -520,13 +769,13 @@ function renderBarBreakdown(container, artifact) {
   container.appendChild(svg);
 }
 
-function renderZonalHeightHeatmap(container, artifact) {
+function renderZonalHeightHeatmap(container, artifact, opts = {}) {
   const { lat, alt, grid } = artifact.data;
   if (!lat || !alt || !grid) {
     container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data.</p>`;
     return;
   }
-  const W = 400, H = 200, PAD = 30;
+  const W = chartWidth(container), H = Math.max(200, opts.height || 0), PAD = 30;
   const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
   const cellW = (W - PAD) / lat.length;
   const cellH = (H - PAD) / alt.length;
@@ -561,13 +810,13 @@ function renderZonalHeightHeatmap(container, artifact) {
   container.appendChild(svg);
 }
 
-function renderScatter(container, artifact) {
+function renderScatter(container, artifact, opts = {}) {
   const { x, y } = artifact.data;
   if (!x || !y || x.length === 0) {
     container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
     return;
   }
-  const W = 400, H = 180, PAD = 10;
+  const W = chartWidth(container), H = opts.height || 180, PAD = 10;
   const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
   const xDomain = [Math.min(...x), Math.max(...x)];
   const yDomain = [Math.min(...y), Math.max(...y)];
@@ -587,7 +836,7 @@ function renderSparkline(container, artifact) {
     container.innerHTML = `<p style="font-size:12px;color:var(--mute);">No data points.</p>`;
     return;
   }
-  const W = 200, H = 40, PAD = 2;
+  const W = chartWidth(container), H = 40, PAD = 2;
   const svg = el("svg", { width: "100%", height: H, viewBox: `0 0 ${W} ${H}` });
   const xDomain = [Math.min(...x), Math.max(...x)];
   const yDomain = [Math.min(...y), Math.max(...y)];
@@ -598,6 +847,294 @@ function renderSparkline(container, artifact) {
   container.appendChild(svg);
 }
 
+/* ============================================================
+   Ready-made assets (chart_type "asset") — one renderer per
+   asset.format in schema/panel.schema.json. Paths are relative to
+   site/ and always under assets/ (CI enforces this).
+   ============================================================ */
+
+const _fetchCache = new Map();
+function fetchCached(path, kind) {
+  const key = kind + ":" + path;
+  if (!_fetchCache.has(key)) {
+    _fetchCache.set(key, fetch(path).then(r => {
+      if (!r.ok) throw new Error(`${path} responded ${r.status}`);
+      return kind === "json" ? r.json() : r.text();
+    }));
+  }
+  return _fetchCache.get(key);
+}
+
+let _plotlyPromise = null;
+function ensurePlotly() {
+  if (window.Plotly) return Promise.resolve(window.Plotly);
+  if (!_plotlyPromise) {
+    _plotlyPromise = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = PLOTLY_SRC;
+      s.onload = () => resolve(window.Plotly);
+      s.onerror = () => { _plotlyPromise = null; reject(new Error("could not load plotly.js")); };
+      document.head.appendChild(s);
+    });
+  }
+  return _plotlyPromise;
+}
+
+function assetNote(container, msg) {
+  container.innerHTML = `<p class="asset-note">${escapeHtml(msg)}</p>`;
+}
+
+function assetActions(container, artifact, extra = []) {
+  const a = artifact.asset;
+  const links = [...extra, `<a href="${encodeURI(a.path)}" target="_blank" rel="noopener">Open original ↗</a>`];
+  const row = document.createElement("div");
+  row.className = "asset-actions";
+  row.innerHTML = links.join("");
+  container.parentElement.appendChild(row);
+}
+
+function frameHeight(artifact, opts, fallback) {
+  return artifact.asset.height || (opts.size === "headline" ? Math.round(fallback * 1.35) : opts.size === "supporting" ? Math.round(fallback * 0.75) : fallback);
+}
+
+async function plotlyInto(div, fig, height) {
+  const Plotly = await ensurePlotly();
+  const layout = Object.assign({}, fig.layout || {});
+  delete layout.width; delete layout.height;
+  layout.autosize = true;
+  layout.margin = layout.margin || { l: 50, r: 16, t: 28, b: 40 };
+  div.style.height = height + "px";
+  await Plotly.newPlot(div, fig.data || [], layout, { responsive: true, displaylogo: false });
+}
+
+function renderAssetImage(container, artifact) {
+  const a = artifact.asset;
+  const img = document.createElement("img");
+  img.className = "asset-img";
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.src = a.path;
+  img.alt = a.alt_text;
+  img.onerror = () => assetNote(container, `Image could not be loaded. ${a.alt_text}`);
+  container.appendChild(img);
+  assetActions(container, artifact);
+}
+
+async function renderAssetPlotly(container, artifact, opts) {
+  const a = artifact.asset;
+  const div = document.createElement("div");
+  div.setAttribute("role", "img");
+  div.setAttribute("aria-label", a.alt_text);
+  container.appendChild(div);
+  try {
+    const fig = await fetchCached(a.path, "json");
+    await plotlyInto(div, fig, frameHeight(artifact, opts, 320));
+  } catch (err) {
+    assetNote(container, `Interactive chart could not be loaded (${err.message}). ${a.alt_text}`);
+  }
+  assetActions(container, artifact);
+}
+
+function renderAssetHtml(container, artifact, opts) {
+  const a = artifact.asset;
+  const iframe = document.createElement("iframe");
+  iframe.className = "asset-frame";
+  iframe.src = a.path;
+  iframe.title = a.alt_text;
+  iframe.loading = "lazy";
+  // Contributed pages run scripts (Bokeh, Leaflet...) but never with this
+  // site's origin: no cookies/storage access, no navigating the top page.
+  iframe.setAttribute("sandbox", "allow-scripts allow-popups");
+  iframe.style.height = frameHeight(artifact, opts, 420) + "px";
+  container.appendChild(iframe);
+  assetActions(container, artifact);
+}
+
+function renderAssetVideo(container, artifact) {
+  const a = artifact.asset;
+  const video = document.createElement("video");
+  video.className = "asset-video";
+  video.controls = true;
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = "metadata";
+  if (a.poster) video.poster = a.poster;
+  video.setAttribute("aria-label", a.alt_text);
+  const src = document.createElement("source");
+  src.src = a.path;
+  src.type = a.format === "webm" ? "video/webm" : "video/mp4";
+  video.appendChild(src);
+  video.appendChild(document.createTextNode(a.alt_text));
+  container.appendChild(video);
+  assetActions(container, artifact);
+}
+
+function renderAssetPdf(container, artifact, opts) {
+  const a = artifact.asset;
+  const link = document.createElement("a");
+  link.className = "pdf-preview";
+  link.href = a.path;
+  link.target = "_blank";
+  link.rel = "noopener";
+  const img = document.createElement("img");
+  img.loading = "lazy";
+  img.alt = a.alt_text;
+  img.src = a.preview || a.path + ".preview.png";
+  img.onerror = () => {
+    // No preview (e.g. local run without pdftoppm): embed the PDF itself.
+    const obj = document.createElement("object");
+    obj.className = "asset-frame";
+    obj.data = a.path;
+    obj.type = "application/pdf";
+    obj.style.height = frameHeight(artifact, opts, 420) + "px";
+    obj.innerHTML = `<p class="asset-note">${escapeHtml(a.alt_text)}</p>`;
+    link.replaceWith(obj);
+  };
+  link.appendChild(img);
+  link.insertAdjacentHTML("beforeend", '<span class="pdf-badge">PDF</span>');
+  container.appendChild(link);
+  assetActions(container, artifact);
+}
+
+function parseCsv(text, delimiter) {
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (c === '"') inQuotes = false;
+      else field += c;
+    } else if (c === '"') inQuotes = true;
+    else if (c === delimiter) { row.push(field); field = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); field = "";
+      if (row.length > 1 || row[0] !== "") rows.push(row);
+      row = [];
+    } else field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+async function renderAssetCsv(container, artifact, opts) {
+  const a = artifact.asset;
+  const cols = a.csv;
+  let text;
+  try {
+    text = await fetchCached(a.path, "text");
+  } catch (err) {
+    return assetNote(container, `Data file could not be loaded (${err.message}).`);
+  }
+  const rows = parseCsv(text, /\.tsv$/i.test(a.path) ? "\t" : ",");
+  const header = rows.shift().map(h => h.trim());
+  const idx = k => header.indexOf(cols[k]);
+  const want = ["x", "y"].concat(cols.lo ? ["lo", "hi"] : []);
+  const out = Object.fromEntries(want.map(k => [k, []]));
+  rows.forEach(r => {
+    const vals = want.map(k => parseFloat(r[idx(k)]));
+    if (vals.some(v => !Number.isFinite(v))) return;  // skip blank/NaN rows
+    want.forEach((k, i) => out[k].push(vals[i]));
+  });
+  if (out.x.length === 0) return assetNote(container, "No numeric rows found in the data file.");
+
+  const synthetic = Object.assign({}, artifact, {
+    data: { x: out.x, y: out.y },
+    x_axis: artifact.x_axis || { label: cols.x, unit: "" },
+    y_axis: artifact.y_axis || { label: cols.y, unit: "" },
+  });
+  let renderer = renderLine;
+  if (cols.render_as === "scatter") renderer = renderScatter;
+  else if (cols.lo) {
+    renderer = renderBand;
+    synthetic.uncertainty = { source: `Range (${cols.lo} – ${cols.hi})`, lo: out.lo, hi: out.hi };
+  }
+  container.innerHTML = "";
+  renderer(container, synthetic, opts);
+  if (!container.parentElement.querySelector(".asset-actions")) {
+    assetActions(container, artifact, []);
+    container.parentElement.querySelector(".asset-actions a").textContent = "Download data ↓";
+  }
+}
+
+const NB_FIGURE_MIME = ["application/vnd.plotly.v1+json", "image/svg+xml", "image/png", "image/jpeg", "image/gif", "text/html"];
+
+async function renderAssetNotebook(container, artifact, opts) {
+  const a = artifact.asset;
+  let nb;
+  try {
+    nb = await fetchCached(a.path, "json");
+  } catch (err) {
+    return assetNote(container, `Notebook could not be loaded (${err.message}).`);
+  }
+  const join = v => Array.isArray(v) ? v.join("") : (v || "");
+  const codeCells = (nb.cells || []).filter(c => c.cell_type === "code");
+  const hasFigure = c => (c.outputs || []).some(o => NB_FIGURE_MIME.some(m => o.data && m in o.data));
+  const cells = a.cell != null ? [codeCells[a.cell]].filter(Boolean) : codeCells.filter(hasFigure);
+  if (cells.length === 0) return assetNote(container, "This notebook has no saved figure outputs.");
+
+  for (const cell of cells) {
+    for (const o of cell.outputs || []) {
+      const mime = NB_FIGURE_MIME.find(m => o.data && m in o.data);
+      if (!mime) continue;
+      const box = document.createElement("div");
+      box.className = "nb-output";
+      container.appendChild(box);
+      const payload = o.data[mime];
+      if (mime === "application/vnd.plotly.v1+json") {
+        try { await plotlyInto(box, payload, frameHeight(artifact, opts, 320)); }
+        catch (err) { box.innerHTML = `<p class="asset-note">Interactive output could not be drawn (${escapeHtml(err.message)}).</p>`; }
+      } else if (mime === "text/html") {
+        const iframe = document.createElement("iframe");
+        iframe.className = "asset-frame";
+        iframe.setAttribute("sandbox", "allow-scripts");
+        iframe.srcdoc = join(payload);
+        iframe.title = a.alt_text;
+        iframe.style.height = frameHeight(artifact, opts, 360) + "px";
+        box.appendChild(iframe);
+      } else {
+        const img = document.createElement("img");
+        img.className = "asset-img";
+        img.alt = a.alt_text;
+        img.src = mime === "image/svg+xml"
+          ? URL.createObjectURL(new Blob([join(payload)], { type: "image/svg+xml" }))
+          : `data:${mime};base64,${join(payload).replace(/\s/g, "")}`;
+        box.appendChild(img);
+      }
+    }
+    const code = document.createElement("details");
+    code.className = "nb-code";
+    code.innerHTML = `<summary>Show the code that made this</summary><pre><code></code></pre>`;
+    code.querySelector("code").textContent = join(cell.source);
+    container.appendChild(code);
+  }
+  assetActions(container, artifact);
+  container.parentElement.querySelector(".asset-actions a").textContent = "Download notebook ↓";
+}
+
+const ASSET_RENDERERS = {
+  svg: renderAssetImage,
+  png: renderAssetImage,
+  webp: renderAssetImage,
+  jpg: renderAssetImage,
+  gif: renderAssetImage,
+  plotly_json: renderAssetPlotly,
+  html: renderAssetHtml,
+  mp4: renderAssetVideo,
+  webm: renderAssetVideo,
+  pdf: renderAssetPdf,
+  csv: renderAssetCsv,
+  ipynb: renderAssetNotebook,
+};
+
+function renderAsset(container, artifact, opts) {
+  const fn = ASSET_RENDERERS[artifact.asset?.format];
+  if (!fn) return assetNote(container, `No viewer for asset format "${artifact.asset?.format}" yet.`);
+  return fn(container, artifact, opts);
+}
+
 const RENDERERS = {
   line: renderLine,
   band: renderBand,
@@ -605,6 +1142,7 @@ const RENDERERS = {
   zonal_height_heatmap: renderZonalHeightHeatmap,
   scatter: renderScatter,
   sparkline: renderSparkline,
+  asset: renderAsset,
 };
 
 loadDashboard();
