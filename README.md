@@ -125,6 +125,10 @@ cd site && python3 -m http.server 8000
 python examples/make_asset_examples.py --clean   # remove them again
 ```
 
+To show the examples on the live dashboard (say, for a demo), run it with
+`--publish`, then commit and push the new files under `site/panels/` and
+`site/assets/`. Take them down with `--clean` and push the deletion.
+
 ## Where a panel sits on the page
 
 The dashboard is organised as a story, not a gallery. Every panel can say
